@@ -1,10 +1,15 @@
-import './App.css'
+import './App.css';
+import Video from './components/Video';
+import Video2 from './components/Video2';
+import VideoCall from './components/VideoCall';
 
 function App() {
 
   return (
     <div className="flex justify-center">
-      Hello World
+      {/* <Video/> */}
+      {/* <Video2/> */}
+      <VideoCall/>
     </div>
   )
 }
