@@ -6,7 +6,8 @@ import { useState } from "react";
 import { ChangeEvent } from "react";
 import { useEffect } from "react";
 
-export default function VideoCall() {
+
+export default async function VideoCall() {
   const [serverUrl, setServerUrl] = useState(
     "http://localhost:9000/peerjs/myVideoApp"
   );
@@ -37,29 +38,64 @@ export default function VideoCall() {
   function handleDestChange(e: ChangeEvent<HTMLInputElement>) {
     setDestId(e.target.value);
   }
-  function Call(destId: string, message: string) {
+  //   function Call(destId: string, message: string) {
+  //     try {
+  //       const conn = peer.connect(destId);
+  //       conn.on("open", function () {
+  //         //receive messages
+  //         conn.on("data", (data) => {
+  //           console.log(`${data}`);
+  //         });
+  //         //send messages
+  //         conn.send(message);
+  //       });
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  //   }
+
+  const constraints = {
+    audio: true,
+    video: {
+      width: 1280,
+      height: 720,
+    },
+  };
+  async function getMedia(): Promise<MediaStream> {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    return stream;
+  }
+
+  async function VideoCall(destId: string) {
+    const stream: MediaStream = await getMedia();
     try {
-      const conn = peer.connect(destId);
-      conn.on("open", function () {
-        //receive messages
-        conn.on("data", (data) => {
-          console.log(`${data}`);
-        });
-        //send messages
-        conn.send(message);
+      const call = peer.call(destId, stream);
+      call.on("stream", (stream) => {
+        //this received stream is of the peer's
+        // const video = stream.getVideoTracks();
+        const audio = new Audio();
+        audio.autoplay = true;
+        audio.srcObject = stream;
+        const videoTrack = stream.getVideoTracks()[0];
+        const audioTrack = stream.getAudioTracks()[0];
+        console.log(videoTrack.readyState);
+        console.log(audioTrack.readyState);
+        const videoElement: HTMLMediaElement = document.getElementById("localVideo");
+        videoElement.srcObject = videoTrack;
       });
     } catch (e) {
       console.log(e);
     }
-  }
-  peer.on("connection", (conn) => {
-    //receive messages
-    conn.on("data", (data) => {
-      console.log(`${data}`);
+    //on receiving call
+    peer.on("call", (call) => {
+      try {
+        call.answer(stream);
+      } catch (e) {
+        console.log(e);
+      }
     });
-    //send messages
-    conn.send("Default message to tell you that I received your connection");
-  });
+  }
+
   return (
     <div>
       <form>
@@ -77,7 +113,7 @@ export default function VideoCall() {
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
             e.stopPropagation();
-            Call(destId, message);
+            VideoCall(destId);
             console.log(message);
           }}
         >
@@ -93,6 +129,11 @@ export default function VideoCall() {
           </label>
           <input type="submit" value="Submit" />
         </form>
+      </div>
+      <div>
+        <video id="video1">
+            
+        </video>
       </div>
     </div>
   );
