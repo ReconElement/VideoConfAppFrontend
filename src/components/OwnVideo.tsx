@@ -12,7 +12,11 @@ export default function OwnVideo(){
     }
     async function Initialize(e) {
         try {
+            console.log("Reached this point");
             const stream = await captureMediaDevices();
+            if(stream){
+                console.log("Stream created");
+            }
             attachVideoStream(stream);
             e.target.disabled = true;
         }
