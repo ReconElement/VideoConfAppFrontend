@@ -80,7 +80,7 @@ export default async function VideoCall() {
         const audioTrack = stream.getAudioTracks()[0];
         console.log(videoTrack.readyState);
         console.log(audioTrack.readyState);
-        const videoElement: HTMLMediaElement = document.getElementById("localVideo");
+        const videoElement: HTMLMediaElement = document.getElementById("video1");
         videoElement.srcObject = videoTrack;
       });
     } catch (e) {

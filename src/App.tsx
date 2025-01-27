@@ -1,15 +1,10 @@
 import './App.css';
-import Video from './components/Video';
-import Video2 from './components/Video2';
-import VideoCall from './components/VideoCall';
-
+import OwnVideo from "./components/OwnVideo.tsx";
 function App() {
 
   return (
     <div className="flex justify-center">
-      {/* <Video/> */}
-      {/* <Video2/> */}
-      <VideoCall/>
+      <OwnVideo/>
     </div>
   )
 }
