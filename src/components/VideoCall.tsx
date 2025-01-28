@@ -1,17 +1,16 @@
 import '../App.css';
 import Peer from 'peerjs';
-import {MouseEventHandler, useState} from 'react';
-import {useEffect} from 'react';
+import {MouseEventHandler, useEffect, useState} from 'react';
 import {ChangeEvent} from 'react';
 
 export default function VideoCall() {
     const [destId, setDestId] = useState<string>('');
-    let peerId: string | null = null;
+    const [peerId, setPeerId] = useState<string>('');
     const peer = new Peer();
     let peerStream: MediaStream | null = null;
     useEffect(()=>{
         peer.on("open",(id)=>{
-            peerId = id;
+            setPeerId(id);
         });
     },[]);
     const mediaConstraints = {
@@ -26,14 +25,17 @@ export default function VideoCall() {
     }
     document.querySelector('#streamVideo')?.addEventListener('click',()=>{
         if(peerStream){
+            console.log("Peer video stream is received");
             attachVideoStream(peerStream);
         }
-    })
+    });
+    const videoElement = document.querySelector('#video');
     function handleDestChange(e: ChangeEvent<HTMLInputElement>) {
         e.preventDefault();
         setDestId(e.target.value);
     }
-    async function videoCall() {
+    async function videoCall(e: MouseEvent) {
+        e.preventDefault();
         try{
             const selfStream = await captureMediaDevices();
             const call = peer.call(destId, selfStream);
@@ -45,11 +47,23 @@ export default function VideoCall() {
             console.error(err);
         }
     }
-    ///TODO: Add something that deals with what happens when we receive a video call 
+    //answer call
+    peer.on('call',async (call)=>{
+        try{
+            const selfStream = await captureMediaDevices();
+            call.answer(selfStream);
+            call.on('stream',function(stream){
+                peerStream = stream;
+            })
+        }
+        catch(e){
+            console.error(e);
+        }
+    })
     function attachVideoStream(stream: MediaStream){
-        const videoElement = document.querySelector('#video');
         if(videoElement){
             videoElement.srcObject = stream;
+            console.log("peer video attached to video tag");
         }
     }
     return(

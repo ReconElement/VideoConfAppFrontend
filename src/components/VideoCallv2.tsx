@@ -1,140 +1,85 @@
-import "../App.css";
-import Peer from "peerjs";
-// import { HtmlHTMLAttributes }from 'react';
-import { useState } from "react";
-// import { MouseEventHandler } from 'react';
-import { ChangeEvent } from "react";
-import { useEffect } from "react";
+import '../App.css';
+import Peer from 'peerjs';
+import {MouseEventHandler, useEffect, useState} from 'react';
+import {ChangeEvent} from 'react';
 
-
-export default async function VideoCall() {
-    const [serverUrl, setServerUrl] = useState(
-        "http://localhost:9000/peerjs/myVideoApp"
-    );
-    const [destId, setDestId] = useState<string>("");
-    const [message, setMessage] = useState<string>("");
-    let peerId: string;
+export default function VideoCall() {
+    const [destId, setDestId] = useState<string>('');
+    const [peerId, setPeerId] = useState<string>('');
     const peer = new Peer();
-
-    useEffect(() => {
-        peer.on("open", (id) => {
-            console.log(`Peer id: ${id}`);
-            peerId = id;
+    let peerStream: MediaStream | null = null;
+    useEffect(()=>{
+        peer.on("open",(id)=>{
+            setPeerId(id);
         });
-    }, []);
-    //to call
-    // function Call(conn: Peer, destId: string){
-    //     conn.on('open',()=>{
-    //         //Receive messages
-    //         conn.on('data', (data)=>{
-    //             console.log(`Received: ${data}`);
-    //         });
-    //     })
-    // }
-    // function establishConn(destId: string): Peer{
-    //     const conn = peer.connect(destId);
-    //     return conn;
-    // }
+    },[]);
+    const mediaConstraints = {
+        video: {
+            height: 720,
+            width: 1280
+        },
+        audio: true
+    };
+    async function captureMediaDevices(){
+        return await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    }
+    const videoElement: HTMLVideoElement | null= document.querySelector('video');
+    document.querySelector('#streamVideo')?.addEventListener('click',()=>{
+        console.log(peerStream?.active);
+        if(peerStream){
+            attachVideoStream(peerStream);
+        }
+    })
     function handleDestChange(e: ChangeEvent<HTMLInputElement>) {
+        e.preventDefault();
         setDestId(e.target.value);
     }
-    //   function Call(destId: string, message: string) {
-    //     try {
-    //       const conn = peer.connect(destId);
-    //       conn.on("open", function () {
-    //         //receive messages
-    //         conn.on("data", (data) => {
-    //           console.log(`${data}`);
-    //         });
-    //         //send messages
-    //         conn.send(message);
-    //       });
-    //     } catch (e) {
-    //       console.log(e);
-    //     }
-    //   }
-
-    const constraints = {
-        audio: true,
-        video: {
-            width: 1280,
-            height: 720,
-        },
-    };
-    async function getMedia(): Promise<MediaStream> {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        return stream;
-    }
-
-    async function VideoCall(destId: string) {
-        const stream: MediaStream = await getMedia();
-        try {
-            const call = peer.call(destId, stream);
-            call.on("stream", (stream) => {
-                //this received stream is of the peer's
-                // const video = stream.getVideoTracks();
-                const audio = new Audio();
-                audio.autoplay = true;
-                audio.srcObject = stream;
-                const videoTrack = stream.getVideoTracks()[0];
-                const audioTrack = stream.getAudioTracks()[0];
-                console.log(videoTrack.readyState);
-                console.log(audioTrack.readyState);
-                const videoElement: HTMLMediaElement = document.getElementById("video1");
-                videoElement.srcObject = videoTrack;
+    async function videoCall(e: MouseEvent) {
+        e.preventDefault();
+        try{
+            const selfStream = await captureMediaDevices();
+            const call = peer.call(destId, selfStream);
+            call.on('stream',function(stream){
+                peerStream = stream
             });
-        } catch (e) {
-            console.log(e);
         }
-        //on receiving call
-        peer.on("call", (call) => {
-            try {
-                call.answer(stream);
-            } catch (e) {
-                console.log(e);
-            }
-        });
+        catch(err){
+            console.error(err);
+        }
     }
-
-    return (
+    //answer call
+    peer.on('call',async (call)=>{
+        try{
+            const selfStream = await captureMediaDevices();
+            call.answer(selfStream);
+            call.on('stream',function(stream){
+                peerStream = stream;
+            })
+        }
+        catch(e){
+            console.error(e);
+        }
+    })
+    function attachVideoStream(stream: MediaStream){
+        if(videoElement){
+            videoElement.srcObject = stream;
+        }
+    }
+    return(
         <div>
-            <form>
-                <label htmlFor="destId">Destination Id: </label>
-                <input
-                    onChange={handleDestChange}
-                    type="text"
-                    name="destId"
-                    id="destId"
-                    placeholder="Destination ID"
-                />
-            </form>
+            <h1>Current Peer Id: {peerId?peerId:"loading..."}</h1>
             <div>
-                <form
-                    onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        VideoCall(destId);
-                        console.log(message);
-                    }}
-                >
-                    <label htmlFor="message">
-                        Message:
-                        <input
-                            type="text"
-                            name="message"
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                setMessage(e.target.value);
-                            }}
-                        />
+                <form>
+                    <label htmlFor="destId">
+                        <input type="text" onChange={handleDestChange} id="destId" name={"destId"} placeholder="Destination ID" />
                     </label>
-                    <input type="submit" value="Submit" />
+                    <button type="submit" onClick={videoCall}>VideoCall</button>
                 </form>
-            </div>
-            <div>
-                <video id="video1">
-
-                </video>
+                <button id={"streamVideo"} >
+                    Click here to view stream!
+                </button>
+                <video src="" id="video" autoPlay playsInline></video>
             </div>
         </div>
-    );
+    )
 }

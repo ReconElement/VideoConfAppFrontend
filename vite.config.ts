@@ -8,4 +8,7 @@ export default defineConfig({
   plugins: [react(),
     tailwindcss()
   ],
-})
+  server: {
+    allowedHosts: ["wise-wings-own.loca.lt"]
+  }
+});
