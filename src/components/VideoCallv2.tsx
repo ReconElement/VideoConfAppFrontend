@@ -25,7 +25,7 @@ export default function VideoCall() {
     }
     const videoElement: HTMLVideoElement | null= document.querySelector('video');
     document.querySelector('#streamVideo')?.addEventListener('click',()=>{
-        console.log(peerStream?.active);
+        // console.log(peerStream?.active);
         if(peerStream){
             attachVideoStream(peerStream);
         }
@@ -38,8 +38,11 @@ export default function VideoCall() {
         e.preventDefault();
         try{
             const selfStream = await captureMediaDevices();
-            const call = peer.call(destId, selfStream);
-            call.on('stream',function(stream){
+            let call;
+            if(selfStream?.active){
+                call = await peer.call(destId, selfStream);
+            }
+            call?.on('stream',async function(stream){
                 peerStream = stream
             });
         }
@@ -51,10 +54,14 @@ export default function VideoCall() {
     peer.on('call',async (call)=>{
         try{
             const selfStream = await captureMediaDevices();
-            call.answer(selfStream);
-            call.on('stream',function(stream){
-                peerStream = stream;
+            call.on('stream',async function(stream){
+                // peerStream = stream;
+                console.log(stream?.active);
+                if(stream?.active){
+                    peerStream = stream;
+                }
             })
+            call.answer(selfStream);
         }
         catch(e){
             console.error(e);
@@ -73,7 +80,7 @@ export default function VideoCall() {
                     <label htmlFor="destId">
                         <input type="text" onChange={handleDestChange} id="destId" name={"destId"} placeholder="Destination ID" />
                     </label>
-                    <button type="submit" onClick={videoCall}>VideoCall</button>
+                    <button type="submit" onClick={videoCall} >VideoCall</button>
                 </form>
                 <button id={"streamVideo"} >
                     Click here to view stream!
