@@ -7,12 +7,17 @@ export default function VideoCall() {
     const [destId, setDestId] = useState<string>('');
     const [peerId, setPeerId] = useState<string>('');
     const peer = new Peer();
-    let peerStream: MediaStream | null = null;
-    useEffect(()=>{
-        peer.on("open",(id)=>{
-            setPeerId(id);
-        });
-    },[]);
+    // let peerStream: MediaStream | null = null;
+    let peerStream: MediaStream;
+
+    // useEffect(()=>{
+    //     peer.on("open",(id)=>{
+    //         setPeerId(id);
+    //     });
+    // },[]);
+    peer.on("open", (id)=>{
+        setPeerId(id);
+    });
     const mediaConstraints = {
         video: {
             height: 720,
@@ -22,6 +27,7 @@ export default function VideoCall() {
     };
     async function captureMediaDevices(){
         return await navigator.mediaDevices.getUserMedia(mediaConstraints);
+        //getDisplayMedia() can capture the screen
     }
     const videoElement: HTMLVideoElement | null= document.querySelector('video');
     document.querySelector('#streamVideo')?.addEventListener('click',()=>{
