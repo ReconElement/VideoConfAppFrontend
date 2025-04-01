@@ -1,12 +1,20 @@
 import '../App.css';
 import Peer from 'peerjs';
-import {useState} from 'react';
+import {useEffect, useState, useMemo} from 'react';
 import {ChangeEvent} from 'react';
+
+/**
+ * 
+ * YOU ARE BANNED ON PEEER JS WEBSITE, MAKE SURE YOU DO THE NECCESSARY CHANGES OR CHECK THAT UR NOT BANNED OR SOMETHING
+ */
 
 export default function VideoCall() {
     const [destId, setDestId] = useState<string>('');
     const [peerId, setPeerId] = useState<string>('');
-    const peer = new Peer();
+    // const peer = new Peer();
+    const peer = useMemo(()=>{
+        return new Peer();
+    },[])
     // let peerStream: MediaStream | null = null;
     let peerStream: MediaStream;
 
@@ -15,9 +23,15 @@ export default function VideoCall() {
     //         setPeerId(id);
     //     });
     // },[]);
-    peer.on("open", (id)=>{
-        setPeerId(id);
-    });
+    // peer.on("open", (id)=>{
+    //     setPeerId(id);
+    // });
+
+    useEffect(()=>{
+        peer.on("open",(id)=>{
+            setPeerId(id);
+        });
+    },[peer]);
     const mediaConstraints = {
         video: {
             height: 720,
