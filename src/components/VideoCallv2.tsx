@@ -1,6 +1,6 @@
 import '../App.css';
 import Peer from 'peerjs';
-import {MouseEventHandler, useEffect, useState} from 'react';
+import {useState} from 'react';
 import {ChangeEvent} from 'react';
 
 export default function VideoCall() {
@@ -86,7 +86,7 @@ export default function VideoCall() {
                     <label htmlFor="destId">
                         <input type="text" onChange={handleDestChange} id="destId" name={"destId"} placeholder="Destination ID" />
                     </label>
-                    <button type="submit" onClick={videoCall} >VideoCall</button>
+                    <button type="submit" onClick={()=>videoCall} >VideoCall</button>
                 </form>
                 <button id={"streamVideo"} >
                     Click here to view stream!
