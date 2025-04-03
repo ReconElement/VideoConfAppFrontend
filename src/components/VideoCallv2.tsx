@@ -28,6 +28,7 @@ export default function VideoCall() {
     // });
 
     useEffect(()=>{
+        
         peer.on("open",(id)=>{
             setPeerId(id);
         });
