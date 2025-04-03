@@ -23,16 +23,15 @@ export default function VideoCall() {
     //         setPeerId(id);
     //     });
     // },[]);
-    // peer.on("open", (id)=>{
-    //     setPeerId(id);
-    // });
+    peer.on("open", (id)=>{
+        setPeerId(id);
+    });
 
-    useEffect(()=>{
-        
-        peer.on("open",(id)=>{
-            setPeerId(id);
-        });
-    },[peer]);
+    // useEffect(()=>{
+    //     peer.on("open",(id)=>{
+    //         setPeerId(id);
+    //     });
+    // },[peer]);
     const mediaConstraints = {
         video: {
             height: 720,
