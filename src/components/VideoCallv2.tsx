@@ -11,12 +11,12 @@ import {ChangeEvent} from 'react';
 export default function VideoCall() {
     const [destId, setDestId] = useState<string>('');
     const [peerId, setPeerId] = useState<string>('');
-    // const peer = new Peer();
-    const peer = useMemo(()=>{
-        return new Peer();
-    },[])
-    // let peerStream: MediaStream | null = null;
-    let peerStream: MediaStream;
+    const peer = new Peer();
+    // const peer = useMemo(()=>{
+    //     return new Peer();
+    // },[])
+    let peerStream: MediaStream | null = null;
+    // let peerStream: MediaStream;
 
     // useEffect(()=>{
     //     peer.on("open",(id)=>{
